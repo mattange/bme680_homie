@@ -35,28 +35,29 @@ dev = Device_BME680(device_id="air-sensor-baby-bedroom",
         mqtt_settings=MQTT_SETTINGS,
         homie_settings=HOMIE_SETTINGS)
 
-print('\n\nPolling:')
 try:
     while True:
-        if sensor.get_sensor_data():
-            output = '{0:.2f} C,{1:.2f} hPa,{2:.2f} %RH'.format(
-                sensor.data.temperature,
-                sensor.data.pressure,
-                sensor.data.humidity)
-            
-            dev.temperature.value = sensor.data.temperature
-            dev.pressure.value = sensor.data.pressure
-            dev.humidity.value = sensor.data.humidity
+        dev.get_core_data()
+        print('should have published data')
+#        if sensor.get_sensor_data():
+#            output = '{0:.2f} C,{1:.2f} hPa,{2:.2f} %RH'.format(
+#                sensor.data.temperature,
+#                sensor.data.pressure,
+#                sensor.data.humidity)
+#            
+#            dev.temperature.value = sensor.data.temperature
+#            dev.pressure.value = sensor.data.pressure
+#            dev.humidity.value = sensor.data.humidity
+#
+#            if sensor.data.heat_stable:
+#                print('{0},{1} Ohms'.format(
+#                    output,
+#                    sensor.data.gas_resistance))
+#
+#            else:
+#                print(output)
 
-            if sensor.data.heat_stable:
-                print('{0},{1} Ohms'.format(
-                    output,
-                    sensor.data.gas_resistance))
-
-            else:
-                print(output)
-
-        time.sleep(60)
+        time.sleep(dev.core_update_interval)
 
 except KeyboardInterrupt:
     pass
