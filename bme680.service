@@ -1,0 +1,11 @@
+[Unit]
+Description=BME680 service
+After=syslog.target network.target
+
+[Service]
+Type=simple
+ExecStart=/home/mattange/venvs/sensor_bme680/bin/python /home/mattange/venvs/sensor_bme680/bme680_homie/bme680_service.py
+Restart=on-abort
+
+[Install]
+WantedBy=default.target
