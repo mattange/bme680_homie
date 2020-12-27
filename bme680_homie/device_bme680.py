@@ -11,11 +11,11 @@ from homie.support.repeating_timer import Repeating_Timer
 
 class Device_BME680(Device_Base):
     
-    _MAX_RESISTANCE = 250000
-    _MIN_RESISTANCE = 50000
+    _MAX_RESISTANCE = 50000
+    _MIN_RESISTANCE = 5000
     _HUMIDITY_WEIGHT = 0.25
     _upd_interval = 60
-    _ideal_rel_humidity = 40
+    _ideal_rel_humidity = 40.
 
 
     def __init__(self, device_id=None, name=None, 
@@ -86,8 +86,28 @@ class Device_BME680(Device_Base):
             self._humidity.value = self._sensor.data.humidity
             if self._sensor.data.heat_stable:
                 self._gas_resistance.value = self._sensor.data.gas_resistance
+                self._aqi.value = self._calculate_aqi(self._sensor.data.gas_resistance, self._sensor.data.humidity)
         else:
             pass
+
+    def _calculate_aqi(self, gas_resistance, humidity):
+        if humidity < self._ideal_rel_humidity:
+            #if humidity == ideal_rel_humidity, then result is 0.
+            #if humidity approaches 0, result is HUMIDITY WEIGHT
+            hum_score = self._HUMIDITY_WEIGHT * (self._ideal_rel_humidity - humidity) / self._ideal_rel_humidity
+        else:
+            #if humidity == ideal_rel_humidity, then result is 0.
+            #if humidity approaches 100, result is HUMIDITY_WEIGHT
+            hum_score = self._HUMIDITY_WEIGHT * (humidity - self._ideal_rel_humidity) / (100. - self._ideal_rel_humidity)
+        
+        if gas_resistance > self._MAX_RESISTANCE:
+            gas_resistance = self._MAX_RESISTANCE - 1.0 #to avoid numerical errors below in ratios
+        elif gas_resistance < self._MIN_RESISTANCE:
+            gas_resistance = self._MIN_RESISTANCE + 1.0
+        gas_score = (1. - self._HUMIDITY_WEIGHT) * (1. - (gas_resistance - self._MIN_RESISTANCE)/(self._MAX_RESISTANCE - self._MIN_RESISTANCE))
+        print(gas_score)
+        print(hum_score)
+        return int(500 * (gas_score + hum_score))
 
     def _publish_data(self):
         if self.mqtt_client.mqtt_connected:
