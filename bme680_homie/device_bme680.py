@@ -11,8 +11,8 @@ from homie.support.repeating_timer import Repeating_Timer
 
 class Device_BME680(Device_Base):
     
-    _MAX_RESISTANCE = 50000
-    _MIN_RESISTANCE = 5000
+    _MAX_RESISTANCE = 100000
+    _MIN_RESISTANCE = 30000
     _HUMIDITY_WEIGHT = 0.25
     _upd_interval = 60
     _ideal_rel_humidity = 40.
@@ -105,8 +105,6 @@ class Device_BME680(Device_Base):
         elif gas_resistance < self._MIN_RESISTANCE:
             gas_resistance = self._MIN_RESISTANCE + 1.0
         gas_score = (1. - self._HUMIDITY_WEIGHT) * (1. - (gas_resistance - self._MIN_RESISTANCE)/(self._MAX_RESISTANCE - self._MIN_RESISTANCE))
-        print(gas_score)
-        print(hum_score)
         return int(500 * (gas_score + hum_score))
 
     def _publish_data(self):
