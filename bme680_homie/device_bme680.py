@@ -1,3 +1,4 @@
+import math
 import bme680
 from homie.device_base import Device_Base
 from homie.node.node_base import Node_Base
@@ -11,7 +12,7 @@ from homie.support.repeating_timer import Repeating_Timer
 
 class Device_BME680(Device_Base):
     
-    _MAX_RESISTANCE = 100000
+    _MAX_RESISTANCE = 275000
     _MIN_RESISTANCE = 5000
     _HUMIDITY_WEIGHT = 0.25
     _upd_interval = 60
@@ -100,7 +101,7 @@ class Device_BME680(Device_Base):
             self._temperature.value = self._sensor.data.temperature + self._sensor_settings["temperature_bias"]
             self._humidity.value = self._sensor.data.humidity + self._sensor_settings["humidity_bias"]
             if self._sensor.data.heat_stable:
-                adj_resistance = sel._adj_gas_resistance(self._sensor.data.gas_resistance, self._sensor.data.humidity)
+                adj_resistance = self._adj_gas_resistance(self._sensor.data.gas_resistance, self._sensor.data.humidity)
                 self._gas_resistance.value = adj_resistance
                 self._aqi.value = self._calculate_aqi(adj_resistance, self._sensor.data.humidity)
         else:
@@ -108,9 +109,9 @@ class Device_BME680(Device_Base):
 
     def _adj_gas_resistance(self, gas_resistance, humidity):
         # based on observations, gas resistance is dependent on humidity more than temperature
-        # so i adjust for it
+        # so i adjust for it and changed the parameter
         # https://forums.pimoroni.com/t/bme680-observed-gas-ohms-readings/6608/16
-        return math.exp(math.log(gas_resistance) + 0.04 * humidity)
+        return math.exp(math.log(gas_resistance) + 0.021 * humidity)
 
 
     def _calculate_aqi(self, gas_resistance, humidity):
