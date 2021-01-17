@@ -12,8 +12,8 @@ from homie.support.repeating_timer import Repeating_Timer
 
 class Device_BME680(Device_Base):
     
-    _MAX_RESISTANCE = 275000
-    _MIN_RESISTANCE = 5000
+    _MAX_RESISTANCE = 350000
+    _MIN_RESISTANCE = 10000
     _HUMIDITY_WEIGHT = 0.25
     _upd_interval = 60
     _ideal_rel_humidity = 40.
@@ -95,8 +95,8 @@ class Device_BME680(Device_Base):
         self.start()
     
     def _get_core_data(self):
+        self._sensor.get_sensor_data()
         if self._mqtt_connected:
-            self._sensor.get_sensor_data()
             self._pressure.value = self._sensor.data.pressure + self._sensor_settings["pressure_bias"]
             self._temperature.value = self._sensor.data.temperature + self._sensor_settings["temperature_bias"]
             self._humidity.value = self._sensor.data.humidity + self._sensor_settings["humidity_bias"]
@@ -111,7 +111,7 @@ class Device_BME680(Device_Base):
         # based on observations, gas resistance is dependent on humidity more than temperature
         # so i adjust for it and changed the parameter
         # https://forums.pimoroni.com/t/bme680-observed-gas-ohms-readings/6608/16
-        return math.exp(math.log(gas_resistance) + 0.021 * humidity)
+        return math.exp(math.log(gas_resistance) + 0.023 * humidity)
 
 
     def _calculate_aqi(self, gas_resistance, humidity):
